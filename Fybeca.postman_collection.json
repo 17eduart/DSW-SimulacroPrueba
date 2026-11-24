@@ -1,0 +1,131 @@
+{
+  "info": {
+    "name": "Simulacro Fybeca",
+    "description": "Pruebas del simulacro DSW. Ejecutar en orden: el login guarda el token en la variable {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01 Bienvenida (200)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/" }
+    },
+    {
+      "name": "02 Registrar cliente (201)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Ana Pérez\",\n  \"cedula\": \"1712345678\",\n  \"correo\": \"ana@ejemplo.com\",\n  \"password\": \"ClaveSegura123!\"\n}" },
+        "url": "{{baseUrl}}/api/clientes/registro"
+      }
+    },
+    {
+      "name": "03 Registrar mismo correo (409)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Ana Pérez\",\n  \"cedula\": \"1712345678\",\n  \"correo\": \"ANA@ejemplo.com\",\n  \"password\": \"ClaveSegura123!\"\n}" },
+        "url": "{{baseUrl}}/api/clientes/registro"
+      }
+    },
+    {
+      "name": "04 Registrar sin campos (400)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Ana Pérez\"\n}" },
+        "url": "{{baseUrl}}/api/clientes/registro"
+      }
+    },
+    {
+      "name": "05 Login correcto (200 + token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const data = pm.response.json();",
+              "if (data.token) { pm.collectionVariables.set('token', data.token); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"correo\": \"ana@ejemplo.com\",\n  \"password\": \"ClaveSegura123!\"\n}" },
+        "url": "{{baseUrl}}/api/clientes/login"
+      }
+    },
+    {
+      "name": "06 Login incorrecto (401)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"correo\": \"ana@ejemplo.com\",\n  \"password\": \"OtraClave999\"\n}" },
+        "url": "{{baseUrl}}/api/clientes/login"
+      }
+    },
+    {
+      "name": "07 Crear producto sin token (401)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Paracetamol 500 mg\",\n  \"categoria\": \"medicamentos\",\n  \"precio\": 2.5,\n  \"stock\": 40\n}" },
+        "url": "{{baseUrl}}/api/productos"
+      }
+    },
+    {
+      "name": "08 Crear producto con token (201)",
+      "request": {
+        "method": "POST",
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Paracetamol 500 mg\",\n  \"categoria\": \"medicamentos\",\n  \"precio\": 2.5,\n  \"stock\": 40\n}" },
+        "url": "{{baseUrl}}/api/productos"
+      }
+    },
+    {
+      "name": "09 Crear otro producto con token (201)",
+      "request": {
+        "method": "POST",
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Pañales Etapa 3\",\n  \"categoria\": \"bebes\",\n  \"precio\": 15.99\n}" },
+        "url": "{{baseUrl}}/api/productos"
+      }
+    },
+    {
+      "name": "10 Crear producto inválido (400)",
+      "request": {
+        "method": "POST",
+        "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }] },
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Producto X\",\n  \"categoria\": \"juguetes\",\n  \"precio\": -3\n}" },
+        "url": "{{baseUrl}}/api/productos"
+      }
+    },
+    {
+      "name": "11 Listar productos (200)",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/productos" }
+    },
+    {
+      "name": "12 Buscar PARA en mayúsculas (200)",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/api/productos?nombre=PARA", "host": ["{{baseUrl}}"], "path": ["api", "productos"], "query": [{ "key": "nombre", "value": "PARA" }] }
+      }
+    },
+    {
+      "name": "13 Buscar sin resultados (404)",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/api/productos?nombre=vitamina", "host": ["{{baseUrl}}"], "path": ["api", "productos"], "query": [{ "key": "nombre", "value": "vitamina" }] }
+      }
+    }
+  ]
+}
